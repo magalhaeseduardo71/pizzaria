@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pedidos">
+<meta name="theme-color" content="#b91c1c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Pizzaria Pedidos</title>
+<style>
+:root{
+  --bg:#f6f4f1; --card:#ffffff; --ink:#1f1d1a; --muted:#6b6560; --line:#e4dfd8;
+  --brand:#b91c1c; --brand-ink:#fff; --soft:#fbeaea; --ok:#15803d; --okSoft:#e7f6ec;
+  --warn:#b45309; --warnSoft:#fdf3e2; --wa:#1fa855;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#16140f; --card:#211e19; --ink:#f2eee8; --muted:#a59d93; --line:#37322b;
+    --brand:#ef4444; --soft:#3a1d1b; --ok:#4ade80; --okSoft:#163322; --warn:#f59e0b; --warnSoft:#3a2a10; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:860px;margin:0 auto;padding:12px 16px 110px}
+header.top{position:sticky;top:0;z-index:5;background:var(--brand);color:var(--brand-ink);padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+header.top h1{font-size:18px;margin:0;flex:1}
+.sync{font-size:12px;opacity:.9;background:rgba(255,255,255,.18);padding:3px 8px;border-radius:99px}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:6;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;border:0;background:none;padding:10px 4px 12px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+nav.tabs button .i{font-size:22px;line-height:1}
+nav.tabs button.on{color:var(--brand);font-weight:600}
+h2{font-size:17px;margin:18px 0 8px}
+h3{font-size:15px;margin:14px 0 6px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.right{text-align:right}
+input[type=text],input[type=tel],input[type=number],input[type=search],input[type=email],input[type=password],select,textarea{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-height:44px}
+textarea{min-height:70px;resize:vertical}
+label.f{display:block;margin:8px 0}
+label.f>span{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 14px;min-height:44px;cursor:pointer;font-weight:600}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.ghost{background:none}
+.btn.sm{min-height:34px;padding:6px 10px;font-size:14px}
+.btn.block{width:100%}
+.btn.danger{color:var(--brand)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:9px 14px;min-height:42px;cursor:pointer;font-weight:500}
+.chip.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.chip .p{font-size:12px;opacity:.75;margin-left:4px}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--card);padding:11px 6px;cursor:pointer;font-weight:600;min-height:44px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--brand);color:var(--brand-ink)}
+.slots{display:flex;gap:6px;margin:8px 0}
+.slot{flex:1;border:2px dashed var(--line);border-radius:10px;padding:8px;text-align:center;font-size:14px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.slot.fill{border-style:solid;border-color:var(--brand);background:var(--soft)}
+.slot.next{border-color:var(--brand)}
+.item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.price{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+.total{font-size:22px;font-weight:800}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:20px;cursor:pointer}
+.step b{min-width:22px;text-align:center}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.pill.esp{background:var(--warnSoft);border-color:transparent;color:var(--warn)}
+.pill.ok{background:var(--okSoft);border-color:transparent;color:var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px}
+.stat{background:var(--bg);border-radius:10px;padding:8px 10px}
+.stat b{display:block;font-size:17px}
+.stat>span{font-size:12px;color:var(--muted)}
+.list-btn{display:flex;width:100%;text-align:left;gap:10px;align-items:center;border:0;border-bottom:1px solid var(--line);background:none;padding:12px 2px;cursor:pointer}
+.list-btn:last-child{border-bottom:0}
+.sticky-total{position:sticky;bottom:72px;z-index:4;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+@media(min-width:700px){.modal-bg{align-items:center}.modal{border-radius:18px}}
+.modal h2{margin-top:4px}
+pre.msg{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:12px;font:14px/1.45 system-ui,sans-serif;margin:0}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:30;font-size:14px}
+.cfgrow{display:grid;grid-template-columns:1fr 110px 40px;gap:6px;margin:6px 0;align-items:center}
+.cfgrow.three{grid-template-columns:1fr 110px 90px 40px}
+.center{text-align:center}
+.chip.vazia:not(.on){border-style:dashed}
+.empty{text-align:center;color:var(--muted);padding:24px 8px}
+.status-novo{color:var(--warn)} .status-preparo{color:var(--warn)} .status-saiu{color:var(--brand)} .status-entregue{color:var(--ok)}
+
+/* ===== Área de custos (massa) ===== */
+.lock{background:none;border:0;color:inherit;opacity:.35;padding:6px;margin:-6px -6px -6px 0;cursor:pointer;display:flex;align-items:center;border-radius:8px}
+.lock:hover,.lock:focus-visible{opacity:.9}
+.lock[hidden]{display:none}
+body.custo{--brand:#24507a;--soft:#e7eef6}
+@media (prefers-color-scheme: dark){ body.custo{--brand:#3b82c4;--soft:#1b2a3a} }
+.mrow{display:grid;gap:8px 10px;align-items:end;padding:12px 0;border-bottom:1px solid var(--line);
+  grid-template-columns:minmax(0,1.4fr) 150px 120px 120px 100px 36px;grid-template-areas:"nm pc pg us ct x"}
+.mrow.head{font-size:12px;color:var(--muted);padding:0 0 6px;align-items:center}
+.mrow:last-of-type{border-bottom:0}
+.m-nm{grid-area:nm}.m-pc{grid-area:pc}.m-pg{grid-area:pg}.m-us{grid-area:us}.m-ct{grid-area:ct}.m-x{grid-area:x}
+.mrow label>span{display:none;font-size:12px;color:var(--muted);margin-bottom:3px}
+.inl{display:flex;gap:4px;align-items:center}.inl input{padding:8px;min-width:0}.inl select{width:60px;flex:none;padding:8px 2px}.inl .u{color:var(--muted);font-size:14px;min-width:22px}
+.m-ct{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;padding-bottom:12px}
+@media(max-width:760px){
+  .mrow{grid-template-columns:1.1fr 1fr 36px;grid-template-areas:"nm nm x" "pc pg pg" "us ct ct"}
+  .mrow.head{display:none}
+  .mrow label>span{display:block}
+  .m-ct{padding-bottom:10px}
+}
+.disco{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.disco .big{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--brand)}
+.segf button{font-size:13px;padding:10px 2px}
+.aviso{background:var(--warnSoft);border-radius:12px;padding:12px 14px;margin:10px 0;font-size:14px}.aviso p{margin:0}
+.bebrow{display:grid;grid-template-columns:minmax(0,1.3fr) 120px 140px minmax(0,1.4fr);gap:8px;align-items:end;padding:12px 0;border-bottom:1px solid var(--line)}
+.bebrow:last-child{border-bottom:0}.bebrow label{display:flex;flex-direction:column;gap:2px}.b-n b{display:block}.b-c{padding-bottom:12px}
+@media(max-width:600px){.bebrow{grid-template-columns:1fr 1fr}.b-n,.b-c{grid-column:1/-1}.b-c{padding-bottom:0}}
+.tbl{overflow-x:auto}
+table.res{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin-top:6px}
+table.res th,table.res td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+@media(max-width:540px){table.res{font-size:13.5px}table.res th,table.res td{padding:8px 3px}table.res th{font-size:11px;letter-spacing:0}}
+table.res th:first-child,table.res td:first-child{text-align:left;white-space:normal}
+table.res th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+table.res tr:last-child td{border-bottom:0}
+.daynav{display:flex;align-items:center;gap:8px;margin-top:8px}
+.bal{padding:9px 0;border-bottom:1px solid var(--line)}
+.cli-head{display:flex;align-items:center;gap:10px;margin:-14px -14px 6px;padding:12px 14px;border-radius:13px 13px 0 0;background:hsl(var(--h) 75% 93%);border-bottom:1px solid hsl(var(--h) 50% 84%)}
+.cli-av{width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;background:hsl(var(--h) 60% 40%)}
+.cli-nm{font-size:17px;color:hsl(var(--h) 65% 28%)}
+@media (prefers-color-scheme: dark){.cli-head{background:hsl(var(--h) 35% 18%);border-bottom-color:hsl(var(--h) 30% 28%)}.cli-nm{color:hsl(var(--h) 75% 75%)}.cli-av{background:hsl(var(--h) 55% 45%)}}
+.tot{background:var(--soft);border-radius:10px;padding:10px 12px;margin-top:10px}.tot .item{padding:6px 0}
+.neg{color:#b91c1c}.okc{color:var(--ok)}.warnc{color:var(--warn)}
+@media (prefers-color-scheme: dark){.neg{color:#f87171}}
+</style>
+</head>
+<body>
+<header class="top"><h1 id="appTitle">🍕 Pedidos</h1><span class="sync" id="syncBadge">Local</span><button class="lock" id="lockBtn" data-a="abrirCusto" title="Área restrita" aria-label="Área restrita"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button></header>
+<main class="wrap" id="view"></main>
+<nav class="tabs" id="nav"></nav>
+<div id="modalRoot"></div>
+
+<script>
+/* ===================== Utilidades ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl = v => 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; };
+const DIAS = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const onlyDigits = s => String(s||'').replace(/\D/g,'');
+function telWhats(t){ let d = onlyDigits(t); if (d.length === 10 || d.length === 11) d = '55' + d; return d; }
+function fmtTel(t){ const d = onlyDigits(t).replace(/^55(?=\d{10,11}$)/,''); if (d.length===11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`; if (d.length===10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`; return t||''; }
+function fmtData(ts){ const d = new Date(ts); return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function hojeIni(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function toast(m){ const t = document.createElement('div'); t.className='toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(), 2200); }
+const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+/* ===================== Configuração padrão ===================== */
+const CONFIG_PADRAO = {
+  nome: 'Pizzaria',
+  precoNormal: 35, precoEspecial: 45,
+  sabores: [
+    {nome:'Calabresa',cat:'normal',preco:35},{nome:'Mussarela',cat:'normal',preco:35},
+    {nome:'Frango com Catupiry',cat:'normal',preco:35},{nome:'Marguerita',cat:'normal',preco:35},
+    {nome:'Portuguesa',cat:'normal',preco:35},{nome:'Milho',cat:'normal',preco:35},
+    {nome:'Napolitana',cat:'normal',preco:35},
+    {nome:'Quatro Queijos',cat:'especial',preco:45},{nome:'Carne de Sol',cat:'especial',preco:45},
+    {nome:'Camarão',cat:'especial',preco:45},{nome:'Filé com Cheddar',cat:'especial',preco:40},
+    {nome:'Strogonoff',cat:'especial',preco:40}
+  ],
+  bordas: [{nome:'Catupiry',preco:10},{nome:'Cheddar',preco:10}],
+  bebidas: [
+    {nome:'Pepsi 1L',preco:8},{nome:'Guaraná Antarctica 1L',preco:8},{nome:'Coca-Cola 1L',preco:10},
+    {nome:'Coca-Cola 2L',preco:14},{nome:'Guaraná Antarctica 2L',preco:12},{nome:'Refrigerante lata',preco:5}
+  ],
+  pagamentos: ['Pix','Dinheiro','Cartão de crédito','Cartão de débito'],
+  bairros: [{nome:'Centro',taxa:5}],
+  taxaPadrao: 5,
+  tempoEntrega: '40 a 60 minutos',
+  tempoRetirada: '20 a 30 minutos',
+  chavePix: '',
+  rodape: 'Obrigado pela preferência! 🍕'
+};
+
+/* ===================== Armazenamento (local + nuvem) ===================== */
+/* Custos: por enquanto só a massa */
+const MASSA_PADRAO = { rende: '', itens: [
+  {id:'farinha', nome:'Farinha de trigo', pacote:1, un:'kg', preco:4.20, usa:''},
+  {id:'fermento', nome:'Fermento biológico', pacote:'', un:'g', preco:'', usa:''},
+  {id:'acucar', nome:'Açúcar', pacote:'', un:'kg', preco:'', usa:''},
+  {id:'sal', nome:'Sal', pacote:'', un:'kg', preco:'', usa:''},
+  {id:'oleo', nome:'Óleo', pacote:'', un:'ml', preco:'', usa:''}
+]};
+// Zera a versão antiga dos custos (mantém só o PIN)
+const BASE_PADRAO = { itens: [
+  {id:'molho', nome:'Molho de tomate', pacote:'', un:'kg', preco:'', usa:''},
+  {id:'mussarela', nome:'Mussarela', pacote:'', un:'kg', preco:'', usa:''}
+]};
+const SABORES_PADRAO = { 'Calabresa': { itens: [
+  {id:'calabresa', nome:'Calabresa', pacote:'', un:'kg', preco:'', usa:''},
+  {id:'cebola', nome:'Cebola', pacote:'', un:'kg', preco:'', usa:''}
+]}};
+function normCustos(c){
+  if (!(c && c.v===2)) c = { v:2, pin:(c&&c.pin)||null, massa:structuredClone(MASSA_PADRAO) };
+  if (!c.massa) c.massa = structuredClone(MASSA_PADRAO);
+  if (!c.base) c.base = structuredClone(BASE_PADRAO);
+  if (!c.sabores) c.sabores = structuredClone(SABORES_PADRAO);
+  if (!c.bordas) c.bordas = { 'Catupiry': { itens: [{id:'catupiry', nome:'Catupiry', pacote:'', un:'kg', preco:'', usa:''}] },
+                              'Cheddar': { itens: [{id:'cheddar', nome:'Cheddar', pacote:'', un:'kg', preco:'', usa:''}] } };
+  if (!c.bebidas) c.bebidas = {};
+  return c;
+}
+
+const LS_KEY = 'pizzaria_v1', LS_FB = 'pizzaria_firebase';
+// Configuração do Firebase já embutida: qualquer aparelho que abrir o site conecta sozinho
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDKrZskuhS0vjpA1bJjvlDmyTP1JVcOtao",
+  authDomain: "pizzaria-pedidos-61780.firebaseapp.com",
+  projectId: "pizzaria-pedidos-61780",
+  storageBucket: "pizzaria-pedidos-61780.firebasestorage.app",
+  messagingSenderId: "159067803702",
+  appId: "1:159067803702:web:e05f3f69c09392a07a4897"
+};
+let DB = { clientes:{}, pedidos:{}, config: structuredClone(CONFIG_PADRAO), custos: normCustos(null) };
+try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s) DB = { clientes:s.clientes||{}, pedidos:s.pedidos||{}, config:{...structuredClone(CONFIG_PADRAO), ...(s.config||{})},
+  custos: normCustos(s.custos) }; } catch(e){}
+function salvarLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch(e){} }
+
+const Cloud = { on:false, user:null, fs:null, base:null, unsub:[] };
+function put(col, obj){ DB[col][obj.id] = obj; salvarLocal(); if (Cloud.on) Cloud.base.collection(col).doc(obj.id).set(obj).catch(e=>toast('Erro ao salvar na nuvem: '+e.message)); }
+function del(col, id){ delete DB[col][id]; salvarLocal(); if (Cloud.on) Cloud.base.collection(col).doc(id).delete().catch(()=>{}); }
+function saveConfig(){ salvarLocal(); if (Cloud.on) Cloud.base.collection('config').doc('main').set(DB.config).catch(()=>{}); }
+let _tc; function saveCustos(){ salvarLocal(); if (!Cloud.on) return; clearTimeout(_tc); _tc = setTimeout(()=>Cloud.base.collection('config').doc('custos').set(DB.custos).catch(e=>toast('Erro ao salvar custos: '+e.message)), 700); }
+
+function loadScript(src){ return new Promise((ok,err)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>err(new Error('Falha ao carregar '+src)); document.head.appendChild(s); }); }
+async function iniciarNuvem(){
+  let cfg; try { cfg = JSON.parse(localStorage.getItem(LS_FB)); } catch(e){}
+  if ((!cfg || !cfg.apiKey) && FIREBASE_CONFIG) cfg = FIREBASE_CONFIG;
+  if (!cfg || !cfg.apiKey) { setSync('Local (sem nuvem)'); return; }
+  try {
+    setSync('Conectando…');
+    const V = '10.12.2', B = `https://cdn.jsdelivr.net/npm/firebase@${V}/`;
+    await loadScript(B+'firebase-app-compat.js');
+    await Promise.all([loadScript(B+'firebase-auth-compat.js'), loadScript(B+'firebase-firestore-compat.js')]);
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    Cloud.fs = firebase.firestore();
+    try { Cloud.fs.enablePersistence({synchronizeTabs:true}); } catch(e){}
+    firebase.auth().onAuthStateChanged(u => {
+      Cloud.unsub.forEach(f=>f()); Cloud.unsub = [];
+      Cloud.user = u; Cloud.on = !!u;
+      if (!u) { setSync('Nuvem: faça login'); if (TAB==='config') render(); else abrirLogin(); return; }
+      Cloud.base = Cloud.fs.collection('pizzarias').doc(u.uid);
+      setSync('☁️ Sincronizado');
+      let primeiro = true;
+      Cloud.unsub.push(Cloud.base.collection('config').doc('main').onSnapshot(d => {
+        if (d.exists) { DB.config = {...structuredClone(CONFIG_PADRAO), ...d.data()}; }
+        else if (primeiro) { saveConfig(); }
+        primeiro = false; salvarLocal(); renderSeguro();
+      }));
+      let primeiroC = true;
+      Cloud.unsub.push(Cloud.base.collection('config').doc('custos').onSnapshot(d => {
+        if (d.exists) { DB.custos = normCustos(d.data()); if (d.data().v!==2) saveCustos(); }
+        else if (primeiroC) saveCustos();
+        primeiroC = false; salvarLocal(); renderSeguro();
+      }));
+      for (const col of ['clientes','pedidos']) {
+        Cloud.unsub.push(Cloud.base.collection(col).onSnapshot(snap => {
+          const novo = {}; snap.forEach(d => novo[d.id] = d.data());
+          // primeira vez: envia para a nuvem o que existia só neste aparelho
+          for (const id in DB[col]) if (!novo[id]) { Cloud.base.collection(col).doc(id).set(DB[col][id]); novo[id] = DB[col][id]; }
+          DB[col] = novo; salvarLocal(); renderSeguro();
+        }, e => toast('Erro nuvem: '+e.message)));
+      }
+    });
+  } catch(e){ setSync('Local (erro na nuvem)'); console.error(e); }
+}
+function setSync(t){ $('#syncBadge').textContent = t; }
+
+/* ===================== Estatísticas do cliente ===================== */
+function pedidosDo(cid){ return Object.values(DB.pedidos).filter(p => p.clienteId===cid && p.status!=='cancelado').sort((a,b)=>b.data-a.data); }
+function stats(cid){
+  const ps = pedidosDo(cid); const n = ps.length;
+  if (!n) return {n:0};
+  const total = ps.reduce((s,p)=>s+p.total,0);
+  const dias = Array(7).fill(0), horas = {}, sabores = {};
+  ps.forEach(p => { const d = new Date(p.data); dias[d.getDay()]++; horas[d.getHours()] = (horas[d.getHours()]||0)+1;
+    (p.pizzas||[]).forEach(z => z.sabores.forEach(s => sabores[s] = (sabores[s]||0) + 1/z.sabores.length * z.qtd)); });
+  const maxD = Math.max(...dias);
+  const diasFav = dias.map((c,i)=>[c,i]).filter(x=>x[0]===maxD).map(x=>DIAS[x[1]]);
+  const horaFav = Object.entries(horas).sort((a,b)=>b[1]-a[1])[0][0];
+  const sabFav = Object.entries(sabores).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+  const dUlt = Math.floor((hojeIni() - new Date(ps[0].data).setHours(0,0,0,0))/864e5);
+  return { n, total, ticket: total/n, ultimo: ps[0], diasUlt: dUlt, primeiro: ps[n-1].data, diasFav, horaFav, sabFav, dias };
+}
+function textoUltimo(d){ return d===0 ? 'hoje' : d===1 ? 'ontem' : `há ${d} dias`; }
+
+/* ===================== Estado do pedido em montagem ===================== */
+let TAB = 'novo';
+let P = novoPedido();
+function novoPedido(){ return { clienteId:null, pizzas:[], bebidas:{}, modo:'entrega', bairro:'', endereco:'', taxa:null, pagamento:'Pix', troco:'', obs:'' }; }
+let PZ = novaPizza();
+function novaPizza(){ return { partes:1, sabores:[], borda:null, obs:'', qtd:1 }; }
+
+function precoPizza(z){
+  const precos = z.sabores.map(n => (DB.config.sabores.find(s=>s.nome===n)||{preco:DB.config.precoNormal}).preco);
+  const base = precos.length ? Math.max(...precos) : 0;
+  const borda = z.borda ? num(z.borda.preco) : 0;
+  return base + borda;
+}
+function catPizza(z){ return z.sabores.some(n => (DB.config.sabores.find(s=>s.nome===n)||{}).cat==='especial') ? 'especial' : 'normal'; }
+function taxaPedido(p){
+  if (p.modo !== 'entrega') return 0;
+  if (p.taxa !== null && p.taxa !== '' && p.taxa !== undefined) return num(p.taxa);
+  const b = DB.config.bairros.find(b=>b.nome===p.bairro); return b ? num(b.taxa) : num(DB.config.taxaPadrao);
+}
+function subtotal(p){
+  let s = p.pizzas.reduce((a,z)=>a+z.preco*z.qtd,0);
+  for (const [nome,q] of Object.entries(p.bebidas)) { const b = DB.config.bebidas.find(x=>x.nome===nome); s += (b ? num(b.preco) : 0) * q; }
+  return s;
+}
+function nomePizza(z){
+  if (z.sabores.length===1) return z.sabores[0];
+  const f = z.sabores.length===2 ? '½' : '⅓';
+  return z.sabores.map(s=>f+' '+s).join(' / ');
+}
+
+/* ===================== Mensagem WhatsApp ===================== */
+function montarMensagem(ped){
+  const c = DB.clientes[ped.clienteId] || {nome:'cliente'};
+  const primeiroNome = c.nome.trim().split(/\s+/)[0];
+  const L = [];
+  L.push(`Olá, *${primeiroNome}*! 😊`);
+  L.push(`Seu pedido na *${DB.config.nome}* foi confirmado:`);
+  L.push('');
+  ped.pizzas.forEach(z => {
+    L.push(`🍕 *${z.qtd}x Pizza ${nomePizza(z)}*${z.sabores.length>1||z.cat==='especial' ? '' : ''} — ${brl((z.preco - (z.borda?num(z.borda.preco):0))*z.qtd)}`);
+    if (z.borda) L.push(`   ↳ Borda recheada de ${z.borda.nome} — ${brl(num(z.borda.preco)*z.qtd)}`);
+    if (z.obs) L.push(`   ↳ Obs: ${z.obs}`);
+  });
+  (ped.bebidasLista||[]).forEach(b => L.push(`🥤 ${b.qtd}x ${b.nome} — ${brl(b.preco*b.qtd)}`));
+  L.push('');
+  if (ped.modo==='entrega') {
+    L.push(`Subtotal: ${brl(ped.subtotal)}`);
+    L.push(`Taxa de entrega: ${ped.taxa ? brl(ped.taxa) : 'grátis'}`);
+  }
+  L.push(`💰 *Total: ${brl(ped.total)}*`);
+  let pg = `💳 Pagamento: ${ped.pagamento}`;
+  if (ped.pagamento==='Dinheiro' && num(ped.troco) > ped.total) pg += ` (troco para ${brl(num(ped.troco))} → levar ${brl(num(ped.troco)-ped.total)})`;
+  L.push(pg);
+  if (ped.pagamento==='Pix' && DB.config.chavePix) L.push(`🔑 Chave Pix: ${DB.config.chavePix}`);
+  L.push('');
+  if (ped.modo==='entrega') {
+    L.push(`🛵 Entrega: ${[ped.endereco, ped.bairro].filter(Boolean).join(' — ')}`);
+    L.push(`⏱️ Tempo estimado: *${DB.config.tempoEntrega}*`);
+  } else {
+    L.push(`🏪 Retirada no balcão`);
+    L.push(`⏱️ Fica pronto em: *${DB.config.tempoRetirada}*`);
+  }
+  if (ped.obs) { L.push(''); L.push(`📝 Obs: ${ped.obs}`); }
+  if (DB.config.rodape) { L.push(''); L.push(DB.config.rodape); }
+  return L.join('\n');
+}
+function abrirWhats(ped){
+  const c = DB.clientes[ped.clienteId]; const tel = telWhats(c && c.telefone);
+  const txt = encodeURIComponent(montarMensagem(ped));
+  const url = isMobile() ? `https://wa.me/${tel}?text=${txt}` : `https://web.whatsapp.com/send?phone=${tel}&text=${txt}`;
+  const w = window.open(url, 'whatsapp_pizzaria'); if (!w) location.href = url;
+}
+
+/* ===================== Render ===================== */
+const NAV_PED = [['novo','➕','Novo pedido'],['pedidos','🧾','Pedidos'],['clientes','👥','Clientes'],['config','⚙️','Cardápio']];
+const NAV_CUSTO = [['fichas','📋','Fichas'],['lucro','💲','Lucro'],['balanco','📒','Balanço'],['gramas','⚖️','Gramas'],['sair','↩️','Sair']];
+const FICHAS = [['massa','Massa'],['base','Base'],['sabores','Sabores'],['bordas','Bordas'],['bebidas','Bebidas']];
+const navGrupo = k => FICHAS.some(f=>f[0]===k) ? 'fichas' : k;
+function render(){
+  const custo = MODO==='custo';
+  document.body.classList.toggle('custo', custo);
+  $('#nav').innerHTML = (custo?NAV_CUSTO:NAV_PED).map(([k,i,t])=>`<button data-a="tab" data-v="${k}" class="${(custo?navGrupo(CTAB):TAB)===k?'on':''}"><span class="i">${i}</span>${t}</button>`).join('');
+  $('#lockBtn').hidden = custo;
+  $('#appTitle').textContent = custo ? 'Custos e lucro' : '🍕 ' + (DB.config.nome || 'Pedidos');
+  const v = $('#view');
+  if (custo) { const fn = {massa:viewMassa, base:viewBase, sabores:viewSabores, bordas:viewBordas, bebidas:viewBebidas, lucro:viewLucro, balanco:viewBalanco, gramas:viewGramas}[CTAB];
+    v.innerHTML = (navGrupo(CTAB)==='fichas' ? segFichas() : '') + fn(); return; }
+  if (TAB==='novo') v.innerHTML = viewNovo();
+  if (TAB==='pedidos') v.innerHTML = viewPedidos();
+  if (TAB==='clientes') v.innerHTML = viewClientes();
+  if (TAB==='config') v.innerHTML = viewConfig();
+}
+// Evita re-renderizar enquanto o usuário digita num campo
+function renderSeguro(){ const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && $('#view').contains(a)) { pendente = true; return; } render(); if ($('#modalRoot').innerHTML && MODAL_REFRESH) MODAL_REFRESH(); }
+let pendente = false, MODAL_REFRESH = null;
+document.addEventListener('focusout', () => setTimeout(()=>{ if (pendente && !(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) { pendente=false; render(); } }, 50));
+
+/* ----- Novo pedido ----- */
+function viewNovo(){
+  const c = DB.clientes[P.clienteId];
+  let h = '';
+  // Cliente
+  h += `<h2>1. Cliente</h2><div class="card">`;
+  if (!c) {
+    h += `<div class="row"><input type="search" id="buscaCli" class="grow" placeholder="Buscar por nome ou telefone…" autocomplete="off" data-in="buscaCli">
+          <button class="btn pri" data-a="novoCliente">+ Novo</button></div><div id="resCli">${listaBuscaCli('')}</div>`;
+  } else {
+    const st = stats(c.id);
+    h += `<div class="row"><div class="grow"><b style="font-size:18px">${esc(c.nome)}</b><div class="muted small">${esc(fmtTel(c.telefone))}${c.bairro?' · '+esc(c.bairro):''}</div></div>
+          <button class="btn sm" data-a="editarCliente" data-id="${c.id}">Editar</button><button class="btn sm ghost" data-a="trocarCliente">Trocar</button></div>`;
+    if (st.n) {
+      h += `<div class="stats">
+        <div class="stat"><b>${st.n+1}º pedido</b><span>já comprou ${st.n}x</span></div>
+        <div class="stat"><b>${textoUltimo(st.diasUlt)}</b><span>último pedido</span></div>
+        <div class="stat"><b>${st.diasFav.join(', ')}</b><span>dia que mais pede · ~${st.horaFav}h</span></div>
+        <div class="stat"><b>${brl(st.ticket)}</b><span>gasto médio</span></div></div>
+        <div class="small muted" style="margin-top:8px">Favoritas: ${esc(st.sabFav.join(', ')||'—')}</div>
+        <button class="btn block" style="margin-top:10px" data-a="repetir">🔁 Repetir último pedido (${brl(st.ultimo.total)})</button>`;
+    } else h += `<div class="pill ok" style="margin-top:8px">⭐ Cliente novo — primeiro pedido</div>`;
+  }
+  h += `</div>`;
+
+  // Pizza
+  h += `<h2>2. Pizza</h2><div class="card">${montadorPizza()}</div>`;
+
+  // Itens adicionados
+  if (P.pizzas.length) {
+    h += `<div class="card">`;
+    P.pizzas.forEach((z,i) => {
+      h += `<div class="item"><div class="grow"><b>${z.qtd}x ${esc(nomePizza(z))}</b> ${z.cat==='especial'?'<span class="pill esp">especial</span>':''}
+        <div class="small muted">${z.borda ? 'Borda '+esc(z.borda.nome) : 'Sem borda'}${z.obs ? ' · '+esc(z.obs) : ''}</div></div>
+        <div class="right"><div class="price">${brl(z.preco*z.qtd)}</div><button class="btn sm ghost danger" data-a="remPizza" data-i="${i}">remover</button></div></div>`;
+    });
+    h += `</div>`;
+  }
+
+  // Bebidas
+  h += `<h2>3. Bebidas</h2><div class="card">`;
+  DB.config.bebidas.forEach(b => {
+    const q = P.bebidas[b.nome] || 0;
+    h += `<div class="item" style="align-items:center"><div class="grow">${esc(b.nome)} <span class="muted small">${brl(b.preco)}</span></div>
+      <div class="step"><button data-a="beb" data-n="${esc(b.nome)}" data-d="-1">−</button><b>${q}</b><button data-a="beb" data-n="${esc(b.nome)}" data-d="1">+</button></div></div>`;
+  });
+  h += `</div>`;
+
+  // Entrega
+  h += `<h2>4. Entrega e pagamento</h2><div class="card">
+    <div class="seg"><button data-a="modo" data-v="entrega" class="${P.modo==='entrega'?'on':''}">🛵 Entrega</button><button data-a="modo" data-v="retirada" class="${P.modo==='retirada'?'on':''}">🏪 Retirada</button></div>`;
+  if (P.modo==='entrega') {
+    h += `<label class="f"><span>Endereço</span><input type="text" data-in="endereco" value="${esc(P.endereco)}" placeholder="Rua, número, referência"></label>
+      <div class="row"><label class="f grow"><span>Bairro</span><select data-in="bairro"><option value="">— escolher —</option>
+      ${DB.config.bairros.map(b=>`<option ${b.nome===P.bairro?'selected':''} value="${esc(b.nome)}">${esc(b.nome)} (${brl(b.taxa)})</option>`).join('')}</select></label>
+      <label class="f" style="width:120px"><span>Taxa (R$)</span><input type="number" step="0.5" inputmode="decimal" data-in="taxa" value="${taxaPedido(P)}"></label></div>`;
+  }
+  h += `<h3>Pagamento</h3><div class="chips">${DB.config.pagamentos.map(pg=>`<button class="chip ${P.pagamento===pg?'on':''}" data-a="pag" data-v="${esc(pg)}">${esc(pg)}</button>`).join('')}</div>`;
+  if (P.pagamento==='Dinheiro') h += `<label class="f"><span>Troco para (R$)</span><input type="number" inputmode="decimal" data-in="troco" value="${esc(P.troco)}" placeholder="Ex.: 100"></label>`;
+  h += `<label class="f"><span>Observação do pedido</span><input type="text" data-in="obs" value="${esc(P.obs)}" placeholder="Opcional"></label></div>`;
+
+  // Total
+  const sub = subtotal(P), tx = taxaPedido(P), tot = sub + tx;
+  const pronto = P.clienteId && (P.pizzas.length || Object.values(P.bebidas).some(q=>q>0));
+  h += `<div class="sticky-total"><div class="grow"><div class="small muted">${P.modo==='entrega'?`Itens ${brl(sub)} + entrega ${brl(tx)}`:'Retirada'}</div><div class="total" id="totalTxt">${brl(tot)}</div></div>
+    <button class="btn wa" data-a="finalizar" ${pronto?'':'disabled'}>Finalizar ➜ WhatsApp</button></div>
+    ${!P.clienteId ? '<p class="small muted center">Escolha o cliente para finalizar.</p>' : ''}
+    <p class="right"><button class="btn sm ghost" data-a="limpar">Limpar pedido</button></p>`;
+  return h;
+}
+function listaBuscaCli(q){
+  q = q.trim().toLowerCase(); const qd = onlyDigits(q);
+  let arr = Object.values(DB.clientes).filter(c => !q || c.nome.toLowerCase().includes(q) || (qd && onlyDigits(c.telefone).includes(qd)));
+  arr = arr.map(c => ({c, n:pedidosDo(c.id).length, u:(pedidosDo(c.id)[0]||{}).data||0})).sort((a,b)=> b.u-a.u || b.n-a.n).slice(0, 8);
+  if (!arr.length) return `<div class="empty small">${q ? 'Nenhum cliente encontrado. Toque em “+ Novo” para cadastrar.' : 'Nenhum cliente cadastrado ainda.'}</div>`;
+  return arr.map(({c,n}) => `<button class="list-btn" data-a="selCliente" data-id="${c.id}"><div class="grow"><b>${esc(c.nome)}</b><div class="small muted">${esc(fmtTel(c.telefone))}${c.bairro?' · '+esc(c.bairro):''}</div></div><span class="pill">${n} pedido${n===1?'':'s'}</span></button>`).join('');
+}
+function montadorPizza(){
+  let h = `<div class="seg">${[[1,'Inteira'],[2,'Meia a meia'],[3,'3 sabores']].map(([n,t])=>`<button data-a="partes" data-v="${n}" class="${PZ.partes===n?'on':''}">${t}</button>`).join('')}</div>`;
+  h += `<div class="slots">`;
+  for (let i=0;i<PZ.partes;i++){ const s = PZ.sabores[i];
+    h += `<div class="slot ${s?'fill':''} ${!s && i===PZ.sabores.length?'next':''}" data-a="limpaSlot" data-i="${i}">${s ? esc(s)+' ✕' : (PZ.partes===1?'Escolha o sabor':(i+1)+'º sabor')}</div>`; }
+  h += `</div>`;
+  for (const cat of ['normal','especial']) {
+    const ls = DB.config.sabores.filter(s=>s.cat===cat); if (!ls.length) continue;
+    h += `<h3>${cat==='normal'?'Normais':'Especiais'}</h3><div class="chips">${ls.map(s=>`<button class="chip ${PZ.sabores.includes(s.nome)?'on':''}" data-a="sabor" data-n="${esc(s.nome)}">${esc(s.nome)}<span class="p">${brl(s.preco)}</span></button>`).join('')}</div>`;
+  }
+  h += `<h3>Borda</h3><div class="chips"><button class="chip ${!PZ.borda?'on':''}" data-a="borda" data-n="">Sem borda</button>
+    ${DB.config.bordas.map(b=>`<button class="chip ${PZ.borda&&PZ.borda.nome===b.nome?'on':''}" data-a="borda" data-n="${esc(b.nome)}">${esc(b.nome)}<span class="p">+${brl(b.preco)}</span></button>`).join('')}</div>`;
+  const completa = PZ.sabores.length===PZ.partes;
+  const pr = completa ? precoPizza(PZ) : 0;
+  h += `<label class="f"><span>Observação da pizza</span><input type="text" data-in="pzObs" value="${esc(PZ.obs)}" placeholder="Ex.: sem cebola"></label>
+    <div class="row"><div class="step"><button data-a="pzQtd" data-d="-1">−</button><b>${PZ.qtd}</b><button data-a="pzQtd" data-d="1">+</button></div>
+    <button class="btn pri grow" data-a="addPizza" ${completa?'':'disabled'}>${completa ? `Adicionar pizza · ${brl(pr*PZ.qtd)}` : `Escolha ${PZ.partes-PZ.sabores.length} sabor(es)`}</button></div>`;
+  if (PZ.partes>1 && completa && catPizza(PZ)==='especial' && PZ.sabores.some(n=>(DB.config.sabores.find(s=>s.nome===n)||{}).cat==='normal'))
+    h += `<p class="small muted">Tem sabor especial: cobrado pelo mais caro.</p>`;
+  return h;
+}
+
+/* ----- Pedidos ----- */
+let FILTRO_PED = 'hoje';
+const STATUS = [['novo','🆕 Novo'],['preparo','👨‍🍳 Preparando'],['saiu','🛵 Saiu'],['entregue','✅ Entregue'],['cancelado','❌ Cancelado']];
+function viewPedidos(){
+  const ini = FILTRO_PED==='hoje' ? hojeIni() : FILTRO_PED==='7d' ? hojeIni()-6*864e5 : FILTRO_PED==='30d' ? hojeIni()-29*864e5 : 0;
+  const ps = Object.values(DB.pedidos).filter(p=>p.data>=ini).sort((a,b)=>b.data-a.data);
+  const val = ps.filter(p=>p.status!=='cancelado');
+  const fat = val.reduce((s,p)=>s+p.total,0);
+  const nPz = val.reduce((s,p)=>s+p.pizzas.reduce((a,z)=>a+z.qtd,0),0);
+  const porPg = {}; val.forEach(p=>porPg[p.pagamento]=(porPg[p.pagamento]||0)+p.total);
+  let h = `<div class="seg" style="margin-top:6px">${[['hoje','Hoje'],['7d','7 dias'],['30d','30 dias'],['tudo','Tudo']].map(([k,t])=>`<button data-a="filtroPed" data-v="${k}" class="${FILTRO_PED===k?'on':''}">${t}</button>`).join('')}</div>
+   <div class="stats"><div class="stat"><b>${val.length}</b><span>pedidos</span></div><div class="stat"><b>${nPz}</b><span>pizzas</span></div>
+   <div class="stat"><b>${brl(fat)}</b><span>faturamento</span></div><div class="stat"><b>${brl(val.length?fat/val.length:0)}</b><span>ticket médio</span></div></div>
+   <div class="small muted" style="margin-top:6px">${Object.entries(porPg).map(([k,v])=>`${esc(k)}: ${brl(v)}`).join(' · ')}</div>`;
+  if (!ps.length) return h + `<div class="empty">Nenhum pedido neste período.</div>`;
+  ps.forEach(p => {
+    const c = DB.clientes[p.clienteId] || {nome:'(cliente removido)'};
+    h += `<div class="card"><div class="row"><div class="grow"><b>#${p.numero||''} ${esc(c.nome)}</b><div class="small muted">${fmtData(p.data)} · ${p.modo==='entrega'?'🛵 '+esc(p.bairro||'entrega'):'🏪 retirada'} · ${esc(p.pagamento)}</div></div><div class="price">${brl(p.total)}</div></div>
+      <div class="small" style="margin:8px 0">${p.pizzas.map(z=>`${z.qtd}x ${esc(nomePizza(z))}${z.borda?' (borda '+esc(z.borda.nome)+')':''}`).join('<br>')}${(p.bebidasLista||[]).map(b=>`<br>${b.qtd}x ${esc(b.nome)}`).join('')}</div>
+      <div class="row"><select class="grow status-${p.status}" data-in="status" data-id="${p.id}" style="min-height:38px;padding:6px 10px">${STATUS.map(([k,t])=>`<option value="${k}" ${p.status===k?'selected':''}>${t}</option>`).join('')}</select>
+      <button class="btn sm wa" data-a="reenviar" data-id="${p.id}">WhatsApp</button><button class="btn sm" data-a="verMsg" data-id="${p.id}">Ver</button></div></div>`;
+  });
+  return h;
+}
+
+/* ----- Clientes ----- */
+let BUSCA_CLI = '';
+function viewClientes(){
+  const q = BUSCA_CLI.toLowerCase(), qd = onlyDigits(q);
+  const arr = Object.values(DB.clientes).filter(c => !q || c.nome.toLowerCase().includes(q) || (qd && onlyDigits(c.telefone).includes(qd)))
+    .map(c=>({c,s:stats(c.id)})).sort((a,b)=>(b.s.n||0)-(a.s.n||0) || a.c.nome.localeCompare(b.c.nome));
+  let h = `<div class="row" style="margin-top:6px"><input type="search" class="grow" placeholder="Buscar cliente…" data-in="buscaClientes" value="${esc(BUSCA_CLI)}"><button class="btn pri" data-a="novoCliente">+ Novo</button></div>
+    <p class="small muted">${Object.keys(DB.clientes).length} clientes cadastrados · ordenados por quem mais compra</p><div class="card">`;
+  if (!arr.length) h += `<div class="empty">Nenhum cliente.</div>`;
+  arr.forEach(({c,s}) => { h += `<button class="list-btn" data-a="verCliente" data-id="${c.id}"><div class="grow"><b>${esc(c.nome)}</b><div class="small muted">${esc(fmtTel(c.telefone))}${s.n?` · último ${textoUltimo(s.diasUlt)}`:''}</div></div>
+      <div class="right"><span class="pill">${s.n||0}x</span><div class="small muted">${s.n?brl(s.total):''}</div></div></button>`; });
+  return h + `</div>`;
+}
+function modalCliente(id){
+  const c = DB.clientes[id]; const s = stats(id); const ps = pedidosDo(id);
+  let h = `<h2>${esc(c.nome)}</h2><div class="muted">${esc(fmtTel(c.telefone))}</div><div class="small muted">${esc([c.endereco,c.bairro].filter(Boolean).join(' — '))}</div>`;
+  if (s.n) {
+    h += `<div class="stats"><div class="stat"><b>${s.n}</b><span>pedidos</span></div><div class="stat"><b>${brl(s.total)}</b><span>total gasto</span></div>
+      <div class="stat"><b>${brl(s.ticket)}</b><span>ticket médio</span></div><div class="stat"><b>${textoUltimo(s.diasUlt)}</b><span>último pedido</span></div>
+      <div class="stat"><b>${s.diasFav.join(', ')}</b><span>dia preferido</span></div><div class="stat"><b>~${s.horaFav}h</b><span>horário comum</span></div></div>
+      <h3>Pedidos por dia da semana</h3><div class="small">${s.dias.map((n,i)=>`${DIAS[i].slice(0,3)}: <b>${n}</b>`).join(' · ')}</div>
+      <h3>Sabores favoritos</h3><div class="small">${esc(s.sabFav.join(', '))}</div>
+      <div class="small muted" style="margin-top:6px">Cliente desde ${new Date(s.primeiro).toLocaleDateString('pt-BR')}</div>
+      <h3>Histórico</h3>${ps.slice(0,30).map(p=>`<div class="item small"><div class="grow">${fmtData(p.data)}<br><span class="muted">${p.pizzas.map(z=>z.qtd+'x '+esc(nomePizza(z))).join(', ')}</span></div><div class="price">${brl(p.total)}</div></div>`).join('')}`;
+  } else h += `<p class="muted">Ainda não fez pedidos.</p>`;
+  h += `<div class="row" style="margin-top:14px"><button class="btn pri grow" data-a="pedirPara" data-id="${id}">Novo pedido</button><button class="btn" data-a="editarCliente" data-id="${id}">Editar</button><button class="btn ghost" data-a="fechar">Fechar</button></div>`;
+  return h;
+}
+function formCliente(id){
+  const c = id ? DB.clientes[id] : {nome:'',telefone:'',endereco:'',bairro:''};
+  const pre = !id && /\d{6,}/.test(onlyDigits(BUSCA_PRE)) ? BUSCA_PRE : '';
+  const preNome = !id && !pre ? BUSCA_PRE : '';
+  return `<h2>${id?'Editar cliente':'Novo cliente'}</h2><form id="fCli" data-id="${id||''}">
+    <label class="f"><span>Nome *</span><input type="text" name="nome" required value="${esc(c.nome||preNome)}" autocomplete="off"></label>
+    <label class="f"><span>WhatsApp (com DDD) *</span><input type="tel" name="telefone" required inputmode="tel" value="${esc(c.telefone||pre)}" placeholder="(71) 99999-9999"></label>
+    <label class="f"><span>Endereço</span><input type="text" name="endereco" value="${esc(c.endereco)}" placeholder="Rua, número, referência"></label>
+    <label class="f"><span>Bairro</span><input type="text" name="bairro" list="dlBairros" value="${esc(c.bairro)}"><datalist id="dlBairros">${DB.config.bairros.map(b=>`<option value="${esc(b.nome)}">`).join('')}</datalist></label>
+    <div class="row" style="margin-top:12px"><button class="btn pri grow" type="submit">Salvar</button>${id?`<button class="btn danger" type="button" data-a="delCliente" data-id="${id}">Excluir</button>`:''}<button class="btn ghost" type="button" data-a="fechar">Cancelar</button></div></form>`;
+}
+let BUSCA_PRE = '';
+
+/* ----- Configuração / Cardápio ----- */
+function viewConfig(){
+  const C = DB.config;
+  const lista = (key, cols) => C[key].map((it,i)=>`<div class="cfgrow ${cols===3?'three':''}"><input type="text" data-cfg="${key}" data-i="${i}" data-f="nome" value="${esc(it.nome)}">
+      <input type="number" step="0.5" inputmode="decimal" data-cfg="${key}" data-i="${i}" data-f="${key==='bairros'?'taxa':'preco'}" value="${key==='bairros'?it.taxa:it.preco}">
+      ${cols===3?`<select data-cfg="${key}" data-i="${i}" data-f="cat"><option value="normal" ${it.cat==='normal'?'selected':''}>Normal</option><option value="especial" ${it.cat==='especial'?'selected':''}>Especial</option></select>`:''}
+      <button class="btn sm ghost danger" data-a="cfgDel" data-k="${key}" data-i="${i}">✕</button></div>`).join('');
+  let fb = {}; try { fb = JSON.parse(localStorage.getItem(LS_FB))||{}; } catch(e){} if (!fb.apiKey && FIREBASE_CONFIG) fb = FIREBASE_CONFIG;
+  return `<h2>Pizzaria</h2><div class="card">
+    <label class="f"><span>Nome da pizzaria (aparece na mensagem)</span><input type="text" data-cfgv="nome" value="${esc(C.nome)}"></label>
+    <div class="row"><label class="f grow"><span>Tempo de entrega</span><input type="text" data-cfgv="tempoEntrega" value="${esc(C.tempoEntrega)}"></label>
+    <label class="f grow"><span>Tempo de retirada</span><input type="text" data-cfgv="tempoRetirada" value="${esc(C.tempoRetirada)}"></label></div>
+    <label class="f"><span>Chave Pix (opcional, vai na mensagem quando for Pix)</span><input type="text" data-cfgv="chavePix" value="${esc(C.chavePix)}"></label>
+    <label class="f"><span>Final da mensagem</span><input type="text" data-cfgv="rodape" value="${esc(C.rodape)}"></label></div>
+
+  <h2>Sabores</h2><div class="card"><div class="cfgrow three small muted"><span>Nome</span><span>Preço</span><span>Tipo</span><span></span></div>${lista('sabores',3)}
+    <div class="row"><button class="btn sm" data-a="cfgAdd" data-k="sabores" data-cat="normal">+ Sabor normal</button><button class="btn sm" data-a="cfgAdd" data-k="sabores" data-cat="especial">+ Sabor especial</button></div>
+    <div class="row small" style="margin-top:10px"><span class="muted">Preço padrão de novos sabores:</span> normal <input type="number" style="width:80px" data-cfgv="precoNormal" value="${C.precoNormal}"> especial <input type="number" style="width:80px" data-cfgv="precoEspecial" value="${C.precoEspecial}">
+    <button class="btn sm" data-a="aplicarPrecos">Aplicar a todos</button></div></div>
+
+  <h2>Bordas recheadas</h2><div class="card">${lista('bordas',2)}<button class="btn sm" data-a="cfgAdd" data-k="bordas">+ Borda</button></div>
+  <h2>Bebidas</h2><div class="card">${lista('bebidas',2)}<button class="btn sm" data-a="cfgAdd" data-k="bebidas">+ Bebida</button></div>
+  <h2>Bairros e taxa de entrega</h2><div class="card">${lista('bairros',2)}<button class="btn sm" data-a="cfgAdd" data-k="bairros">+ Bairro</button>
+    <label class="f"><span>Taxa padrão (bairro não listado)</span><input type="number" step="0.5" data-cfgv="taxaPadrao" value="${C.taxaPadrao}"></label></div>
+
+  <h2>Nuvem (sincronizar PC e celular)</h2><div class="card small">
+    ${Cloud.user ? `<p>Conectado como <b>${esc(Cloud.user.email)}</b>. Tudo é salvo na nuvem e aparece em todos os aparelhos.</p><button class="btn sm" data-a="sair">Sair</button>`
+     : fb.apiKey ? `<p>Firebase configurado. <button class="btn sm pri" data-a="login">Entrar</button></p>` : `<p class="muted">Sem nuvem: os dados ficam só neste aparelho. Cole aqui a configuração do seu projeto Firebase para sincronizar.</p>`}
+    <label class="f"><span>firebaseConfig (JSON)</span><textarea id="fbCfg" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'>${fb.apiKey?esc(JSON.stringify(fb,null,1)):''}</textarea></label>
+    <div class="row"><button class="btn sm pri" data-a="salvarFb">Salvar e conectar</button>${fb.apiKey?'<button class="btn sm danger" data-a="removerFb">Remover</button>':''}</div></div>
+
+  <h2>Backup</h2><div class="card row"><button class="btn sm" data-a="exportar">⬇️ Exportar dados</button><label class="btn sm">⬆️ Importar<input type="file" accept=".json" id="impFile" hidden></label></div>`;
+}
+
+/* ===================== ÁREA DE CUSTOS (restrita) ===================== */
+let MODO = 'pedidos', CTAB = 'massa';
+const CU = () => DB.custos;
+const UN = { kg:['g',1000], g:['g',1], L:['ml',1000], ml:['ml',1], un:['un',1] };
+const unUso = it => (UN[it.un]||UN.un)[0];
+// custo do que vai na receita = preço do pacote ÷ tamanho do pacote × quanto usa
+function custoItem(it){ const tam = num(it.pacote) * (UN[it.un]||UN.un)[1]; return tam>0 ? num(it.preco)/tam*num(it.usa) : 0; }
+const somaItens = lista => lista.reduce((s,it)=>s+custoItem(it),0);
+const custoReceita = () => somaItens(CU().massa.itens);
+const custoDisco = () => num(CU().massa.rende)>0 ? custoReceita()/num(CU().massa.rende) : 0;
+// base de toda pizza = 1 disco + molho + mussarela (mesma quantidade em qualquer sabor e fração)
+const custoBasePizza = () => custoDisco() + somaItens(CU().base.itens);
+let SABSEL = 'Calabresa';
+let BORSEL = 'Catupiry', ULTFICHA = 'massa', DIA = hojeIni();
+function listaAtual(){ if (CTAB==='massa') return CU().massa.itens; if (CTAB==='base') return CU().base.itens;
+  if (CTAB==='bordas') { const B = CU().bordas; if (!B[BORSEL]) B[BORSEL] = { itens: [] }; return B[BORSEL].itens; }
+  const S = CU().sabores; if (!S[SABSEL]) S[SABSEL] = { itens: [] }; return S[SABSEL].itens; }
+const recheioCusto = n => somaItens(CU().sabores[n]?.itens||[]);
+const bordaCusto = n => somaItens(CU().bordas[n]?.itens||[]);
+function bebidaCustoUn(n){ const b = CU().bebidas[n]; return b && num(b.qtd)>0 ? num(b.preco)/num(b.qtd) : 0; }
+// Custo, venda e lucro de cada coisa de um pedido
+function calcPedido(p){
+  const L = [], base = custoBasePizza();
+  (p.pizzas||[]).forEach(z => {
+    const n = z.sabores.length, bordaV = z.borda ? num(z.borda.preco) : 0;
+    const custo = base + z.sabores.reduce((s,x)=>s+recheioCusto(x),0)/n;
+    const falta = z.sabores.filter(x=>!(recheioCusto(x)>0));
+    const av = [base>0?'':'base não preenchida', falta.length?'sem ficha: '+falta.join(', '):''].filter(Boolean).join(' · ');
+    L.push({desc:'Pizza '+nomePizza(z), qtd:z.qtd, venda:(z.preco-bordaV)*z.qtd, custo:custo*z.qtd, aviso:av});
+    if (z.borda) { const cb = bordaCusto(z.borda.nome); L.push({desc:'Borda '+z.borda.nome, qtd:z.qtd, venda:bordaV*z.qtd, custo:cb*z.qtd, aviso:cb>0?'':'borda sem ficha'}); }
+  });
+  (p.bebidasLista||[]).forEach(b => { const cu = bebidaCustoUn(b.nome); L.push({desc:b.nome, qtd:b.qtd, venda:num(b.preco)*b.qtd, custo:cu*b.qtd, aviso:cu>0?'':'bebida sem custo'}); });
+  return { linhas:L, venda:L.reduce((s,l)=>s+l.venda,0), custo:L.reduce((s,l)=>s+l.custo,0) };
+}
+// Cor fixa por cliente (o mesmo cliente sempre tem a mesma cor)
+const PALETA = [210, 140, 25, 285, 340, 180, 48, 0, 250, 95];   // azul, verde, laranja, roxo, rosa, turquesa, amarelo, vermelho, anil, oliva
+function corCliente(id){
+  const c = DB.clientes[id]; if (c && c.cor != null) return c.cor;
+  let h = 2166136261; for (const ch of String(id||'')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  return PALETA[h % PALETA.length];
+}
+const iniciais = n => String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const fmtQ = (v,u) => (Math.round(num(v)*10)/10).toLocaleString('pt-BR') + ' ' + u;
+const temRecheio = nome => (CU().sabores[nome]?.itens||[]).some(it=>custoItem(it)>0);
+function hashPin(s){ let h = 5381; for (const c of String(s)) h = ((h<<5)+h+c.charCodeAt(0))|0; return 'h'+(h>>>0).toString(36); }
+
+function abrirCusto(){
+  if (!CU().pin) abrirModal(formPin(true));
+  else abrirModal(`<h2>Área restrita</h2><form id="fPin"><label class="f"><span>Digite o PIN</span><input type="password" inputmode="numeric" name="p" id="pinIn" required autocomplete="off"></label>
+    <div class="row"><button class="btn pri grow" type="submit">Entrar</button><button class="btn ghost" type="button" data-a="fechar">Cancelar</button></div></form>`);
+  setTimeout(()=>{ const i = $('#modalRoot input'); i && i.focus(); }, 50);
+}
+function formPin(primeiro){
+  return `<h2>${primeiro?'Criar PIN da área de custos':'Trocar PIN'}</h2><p class="small muted">Use de 4 a 8 números. O PIN será pedido sempre que alguém tocar no cadeado.</p>
+  <form id="fPinNovo"><label class="f"><span>Novo PIN</span><input type="password" inputmode="numeric" name="p1" id="pin1" required autocomplete="off"></label>
+  <label class="f"><span>Repita o PIN</span><input type="password" inputmode="numeric" name="p2" id="pin2" required autocomplete="off"></label>
+  <div class="row"><button class="btn pri grow" type="submit">${primeiro?'Criar e entrar':'Salvar PIN'}</button><button class="btn ghost" type="button" data-a="fechar">Cancelar</button></div></form>`;
+}
+function entrarCusto(){ MODO = 'custo'; CTAB = 'balanco'; DIA = hojeIni(); fecharModal(); render(); window.scrollTo(0,0); }
+
+// Tabela de ingredientes (igual em Massa, Base e Sabores)
+function tabelaItens(lista, rotuloUso){
+  let h = `<div class="card"><div class="mrow head"><span>Ingrediente</span><span>Pacote</span><span>Paguei no pacote</span><span>${rotuloUso}</span><span class="right">Custo</span><span></span></div>`;
+  if (!lista.length) h += `<div class="empty">Nenhum ingrediente. Toque em “+ Ingrediente”.</div>`;
+  lista.forEach((it,i) => { h += `<div class="mrow">
+    <label class="m-nm"><span>Ingrediente</span><input type="text" data-ci="m" data-i="${i}" data-f="nome" value="${esc(it.nome)}" placeholder="Nome do ingrediente"></label>
+    <label class="m-pc"><span>Pacote</span><div class="inl"><input type="number" step="any" inputmode="decimal" data-ci="m" data-i="${i}" data-f="pacote" value="${it.pacote}" placeholder="1">
+      <select data-ci="m" data-i="${i}" data-f="un" aria-label="Unidade do pacote">${Object.keys(UN).map(u=>`<option ${it.un===u?'selected':''}>${u}</option>`).join('')}</select></div></label>
+    <label class="m-pg"><span>Paguei no pacote</span><div class="inl"><span class="u">R$</span><input type="number" step="0.01" inputmode="decimal" data-ci="m" data-i="${i}" data-f="preco" value="${it.preco}" placeholder="0,00"></div></label>
+    <label class="m-us"><span>${rotuloUso}</span><div class="inl"><input type="number" step="any" inputmode="decimal" data-ci="m" data-i="${i}" data-f="usa" value="${it.usa}" placeholder="0"><span class="u" data-un="${i}">${unUso(it)}</span></div></label>
+    <div class="m-ct" data-calc="${i}">${brl(custoItem(it))}</div>
+    <button class="m-x btn sm ghost danger" data-a="mDel" data-i="${i}" aria-label="Remover" style="margin-bottom:6px">✕</button></div>`; });
+  return h + `<button class="btn" data-a="mAdd" style="margin-top:10px">+ Ingrediente</button></div>`;
+}
+
+/* ----- Massa ----- */
+function viewMassa(){
+  const M = CU().massa;
+  return `<h2>Massa</h2><p class="small muted">Para cada ingrediente: o tamanho do pacote, quanto pagou no pacote e quanto vai na receita. A conta é feita sozinha.</p>
+  ${tabelaItens(M.itens, 'Vai na receita')}
+  <div class="card"><label class="f"><span>Essa receita rende quantos discos?</span><input type="number" step="any" inputmode="decimal" data-ci="rende" value="${M.rende}" placeholder="Ex.: 4" style="max-width:160px"></label></div>
+  <div id="resBox">${resMassa()}</div>
+  <p class="right"><button class="btn sm ghost" data-a="trocarPin">Trocar PIN</button></p>`;
+}
+function resMassa(){
+  const ok = num(CU().massa.rende)>0;
+  return `<div class="card"><div class="item"><span class="grow">Custo da receita inteira</span><b class="price">${brl(custoReceita())}</b></div>
+    <div class="disco" style="padding-top:10px"><span class="grow">Custo de <b>1 disco</b></span><span class="big">${ok ? brl(custoDisco()) : '—'}</span></div></div>
+    ${ok ? '' : '<p class="small muted">Preencha quantos discos a receita rende para ver o valor de 1 disco.</p>'}`;
+}
+
+/* ----- Base (vai em toda pizza) ----- */
+function viewBase(){
+  return `<h2>Base da pizza</h2><p class="small muted">O que vai em <b>toda</b> pizza, na mesma quantidade, seja qual for o sabor e seja inteira, meia ou 3 sabores.</p>
+  <div class="card"><div class="item"><span class="grow"><b>1 disco de massa</b><div class="small muted">vem da aba Massa</div></div><b class="price" id="discoBase">${num(CU().massa.rende)>0 ? brl(custoDisco()) : 'preencher na Massa'}</b></div></div>
+  ${tabelaItens(CU().base.itens, 'Vai em cada pizza')}
+  <div id="resBox">${resBase()}</div>`;
+}
+function resBase(){
+  return `<div class="card disco"><span class="grow">Custo da <b>base de 1 pizza</b><div class="small muted">disco + ${CU().base.itens.map(it=>esc(it.nome||'?').toLowerCase()).join(' + ')}</div></span><span class="big">${brl(custoBasePizza())}</span></div>`;
+}
+
+/* ----- Sabores ----- */
+function viewSabores(){
+  const nomes = DB.config.sabores.map(s=>s.nome); if (!nomes.includes(SABSEL)) SABSEL = nomes[0] || 'Calabresa';
+  return `<h2>Sabores</h2><p class="small muted">Escolha o sabor e coloque só o <b>recheio</b> de uma pizza inteira. A base (disco, molho e mussarela) já entra sozinha.</p>
+  <div class="chips">${nomes.map(n=>`<button class="chip ${n===SABSEL?'on':''} ${temRecheio(n)?'':'vazia'}" data-a="sabSel" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+  <p class="small muted">Contorno tracejado = ainda não preenchido.</p>
+  <h2>Recheio: ${esc(SABSEL)}</h2>
+  ${tabelaItens(listaAtual(), 'Vai na pizza inteira')}
+  <div id="resBox">${resSabor()}</div>`;
+}
+function resSabor(){
+  const base = custoBasePizza(), rech = somaItens(listaAtual()), total = base + rech;
+  const sab = DB.config.sabores.find(s=>s.nome===SABSEL); const venda = num(sab && sab.preco);
+  return `<div class="card">
+    <div class="item"><span class="grow">Base (disco + molho + mussarela)</span><b class="price">${brl(base)}</b></div>
+    <div class="item"><span class="grow">Recheio de ${esc(SABSEL)}</span><b class="price">${brl(rech)}</b></div>
+    <div class="disco" style="padding-top:10px"><span class="grow">Custo da <b>pizza inteira</b></span><span class="big">${brl(total)}</span></div>
+    ${venda ? `<div class="item" style="border-top:1px solid var(--line);margin-top:10px"><span class="grow">Vendo por ${brl(venda)}</span><b class="price">lucro ${brl(venda-total)}</b></div>` : ''}
+  </div>
+  <div class="card small"><b>Nas frações</b> (o recheio é dividido, a base fica inteira):
+    <div class="item"><span class="grow">Metade (½) de ${esc(SABSEL)}</span><b class="price">${brl(rech/2)}</b></div>
+    <div class="item"><span class="grow">Um terço (⅓) de ${esc(SABSEL)}</span><b class="price">${brl(rech/3)}</b></div></div>`;
+}
+
+function segFichas(){
+  return `<div class="seg segf" style="margin-top:6px">${FICHAS.map(([k,t])=>`<button data-a="ctab" data-v="${k}" class="${CTAB===k?'on':''}">${t}</button>`).join('')}</div>`;
+}
+
+/* ----- Bordas ----- */
+function viewBordas(){
+  const nomes = DB.config.bordas.map(b=>b.nome); if (!nomes.includes(BORSEL)) BORSEL = nomes[0] || 'Catupiry';
+  return `<h2>Bordas</h2><p class="small muted">Coloque o que vai em <b>uma</b> borda recheada.</p>
+  <div class="chips">${nomes.map(n=>`<button class="chip ${n===BORSEL?'on':''} ${bordaCusto(n)>0?'':'vazia'}" data-a="borSel" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+  <h2>Borda de ${esc(BORSEL)}</h2>${tabelaItens(listaAtual(), 'Vai em cada borda')}<div id="resBox">${resBorda()}</div>`;
+}
+function resBorda(){
+  const b = DB.config.bordas.find(x=>x.nome===BORSEL), venda = num(b&&b.preco), c = bordaCusto(BORSEL);
+  return `<div class="card"><div class="disco"><span class="grow">Custo de <b>1 borda</b></span><span class="big">${brl(c)}</span></div>
+    ${venda?`<div class="item" style="border-top:1px solid var(--line);margin-top:10px"><span class="grow">Cobro ${brl(venda)} pela borda</span><b class="price">lucro ${brl(venda-c)}</b></div>`:''}</div>`;
+}
+
+/* ----- Bebidas ----- */
+function viewBebidas(){
+  let h = `<h2>Bebidas</h2><p class="small muted">Quantas unidades vêm no fardo (ou pacote) e quanto pagou nele. O preço de venda vem do Cardápio.</p><div class="card">`;
+  if (!DB.config.bebidas.length) h += `<div class="empty">Nenhuma bebida no Cardápio.</div>`;
+  DB.config.bebidas.forEach((b,i) => { const c = CU().bebidas[b.nome] || {};
+    h += `<div class="bebrow"><div class="b-n"><b>${esc(b.nome)}</b><span class="small muted">vendo por ${brl(b.preco)}</span></div>
+      <label><span class="small muted">Unidades no fardo</span><input type="number" step="1" inputmode="numeric" data-ci="beb" data-n="${esc(b.nome)}" data-f="qtd" value="${c.qtd??''}" placeholder="12"></label>
+      <label><span class="small muted">Paguei no fardo (R$)</span><input type="number" step="0.01" inputmode="decimal" data-ci="beb" data-n="${esc(b.nome)}" data-f="preco" value="${c.preco??''}" placeholder="0,00"></label>
+      <div class="b-c small" data-bcalc="${i}">${bebCalc(b)}</div></div>`; });
+  return h + `</div>`;
+}
+function bebCalc(b){ const cu = bebidaCustoUn(b.nome); return cu>0 ? `custo <b>${brl(cu)}</b> cada · lucro <b>${brl(num(b.preco)-cu)}</b> cada` : '<span class="muted">preencha para ver o lucro</span>'; }
+
+/* ----- Lucro por produto ----- */
+function viewLucro(){
+  const linha = (nome, custo, venda, ok) => `<tr><td>${esc(nome)}</td>${ok?`<td>${brl(custo)}</td><td>${brl(venda)}</td><td><b class="${venda-custo<0?'neg':''}">${brl(venda-custo)}</b></td>`:`<td colspan="3" class="muted small">falta preencher</td>`}</tr>`;
+  const cab = t => `<tr><th>${t}</th><th>Custo</th><th>Venda</th><th>Lucro</th></tr>`;
+  const base = custoBasePizza();
+  return `<h2>Lucro por produto</h2><p class="small muted">Quanto custa, quanto você vende e quanto sobra de cada um.</p>
+  <div class="card"><div class="tbl"><table class="res">${cab('Pizza inteira')}${DB.config.sabores.map(s=>linha(s.nome, base+recheioCusto(s.nome), num(s.preco), base>0 && recheioCusto(s.nome)>0)).join('')}</table></div></div>
+  <div class="card"><div class="tbl"><table class="res">${cab('Borda')}${DB.config.bordas.map(b=>linha(b.nome, bordaCusto(b.nome), num(b.preco), bordaCusto(b.nome)>0)).join('')}</table></div></div>
+  <div class="card"><div class="tbl"><table class="res">${cab('Bebida')}${DB.config.bebidas.map(b=>linha(b.nome, bebidaCustoUn(b.nome), num(b.preco), bebidaCustoUn(b.nome)>0)).join('')}</table></div></div>`;
+}
+
+/* ----- Balanço do dia (calculado sozinho a cada pedido) ----- */
+function viewBalanco(){
+  const fim = DIA + 864e5, hoje = DIA===hojeIni();
+  const ps = Object.values(DB.pedidos).filter(p=>p.data>=DIA && p.data<fim && p.status!=='cancelado').sort((a,b)=>a.data-b.data);
+  let venda = 0, custo = 0, taxas = 0, avisos = 0;
+  ps.forEach(p => { const c = p.calc || calcPedido(p); venda += c.venda; custo += c.custo; taxas += num(p.taxa); avisos += c.linhas.filter(l=>l.aviso).length; });
+  const d = new Date(DIA);
+  let h = `<div class="daynav"><button class="btn sm" data-a="dia" data-d="-1" aria-label="Dia anterior">◀</button>
+    <b class="grow" style="text-align:center">${hoje?'Hoje · ':''}${DIAS[d.getDay()]}, ${d.toLocaleDateString('pt-BR')}</b>
+    <button class="btn sm" data-a="dia" data-d="1" ${hoje?'disabled':''} aria-label="Próximo dia">▶</button></div>
+  <div class="card">
+    <div class="item"><span class="grow">Vendido em produtos (${ps.length} pedido${ps.length===1?'':'s'})</span><b class="price">${brl(venda)}</b></div>
+    <div class="item"><span class="grow">💵 Dinheiro do <b>custo</b><div class="small muted">separar para repor ingredientes e bebidas</div></span><b class="price">${brl(custo)}</b></div>
+    <div class="disco" style="padding-top:10px"><span class="grow">💰 Dinheiro do <b>lucro</b></span><span class="big">${brl(venda-custo)}</span></div>
+    ${taxas?`<div class="item small" style="border-top:1px solid var(--line);margin-top:8px"><span class="grow">Taxas de entrega (à parte, fora do lucro)</span><b class="price">${brl(taxas)}</b></div>`:''}
+  </div>
+  ${avisos?`<div class="aviso"><p>⚠️ ${avisos} item(ns) estão sem ficha preenchida, então o custo está incompleto (o lucro aparece maior do que é). Preencha nas Fichas e depois toque em “Recalcular”.</p></div>`:''}`;
+  if (!ps.length) return h + `<div class="empty">Nenhum pedido neste dia.</div>`;
+  h += `<h2>Pedido por pedido</h2>`;
+  ps.forEach(p => { const c = p.calc || calcPedido(p), cli = DB.clientes[p.clienteId] || {nome:'Cliente'};
+    h += `<div class="card cli-card" style="--h:${corCliente(p.clienteId)}"><div class="cli-head"><span class="cli-av">${esc(iniciais(cli.nome))}</span>
+      <div class="grow"><b class="cli-nm">${esc(cli.nome)}</b><div class="small muted">Pedido #${p.numero||''} · ${new Date(p.data).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div></div>
+      ${c.linhas.map(l=>`<div class="bal"><div>${l.qtd}x ${esc(l.desc)}</div>
+        <div class="small">custou <b>${brl(l.custo)}</b> · vendeu <b>${brl(l.venda)}</b> · lucro <b class="${l.venda-l.custo<0?'neg':'okc'}">${brl(l.venda-l.custo)}</b></div>
+        ${l.aviso?`<div class="small warnc">⚠️ ${esc(l.aviso)}</div>`:''}</div>`).join('')}
+      <div class="tot"><b>Total do pedido</b>
+        <div class="item"><span class="grow">Custo</span><b class="price">${brl(c.custo)}</b></div>
+        <div class="item"><span class="grow">Venda</span><b class="price">${brl(c.venda)}</b></div>
+        <div class="item"><span class="grow"><b>Lucro</b></span><b class="price ${c.venda-c.custo<0?'neg':'okc'}" style="font-size:18px">${brl(c.venda-c.custo)}</b></div>
+        ${num(p.taxa)?`<div class="item small muted"><span class="grow">Taxa de entrega (fora do lucro)</span><span class="price">${brl(p.taxa)}</span></div>
+        <div class="item small"><span class="grow">Cliente pagou no total</span><b class="price">${brl(c.venda+num(p.taxa))}</b></div>`:''}
+      </div></div>`; });
+  return h + `<p class="right"><button class="btn sm" data-a="recalcDia">🔄 Recalcular este dia com os preços atuais</button></p>`;
+}
+
+/* ----- Tabela de gramas ----- */
+function viewGramas(){
+  const B = CU().base.itens.filter(it=>num(it.usa)>0);
+  let h = `<h2>Tabela de gramas</h2><p class="small muted">Quanto vai de cada coisa. A base é igual em toda pizza; o recheio divide na metade e no terço.</p>
+  <div class="card"><b>Toda pizza (qualquer sabor e fração)</b><div class="tbl"><table class="res"><tr><th>Item</th><th>Quantidade</th></tr>
+    <tr><td>Disco de massa</td><td>1 un</td></tr>${B.map(it=>`<tr><td>${esc(it.nome)}</td><td>${fmtQ(it.usa,unUso(it))}</td></tr>`).join('')}</table></div></div>`;
+  const sabs = DB.config.sabores.filter(s=>(CU().sabores[s.nome]?.itens||[]).some(it=>num(it.usa)>0));
+  sabs.forEach(s => { const its = CU().sabores[s.nome].itens.filter(it=>num(it.usa)>0);
+    h += `<div class="card"><b>${esc(s.nome)}</b><div class="tbl"><table class="res"><tr><th>Recheio</th><th>Inteira</th><th>Metade ½</th><th>Terço ⅓</th></tr>
+      ${its.map(it=>{ const u = unUso(it); return `<tr><td>${esc(it.nome)}</td><td><b>${fmtQ(it.usa,u)}</b></td><td>${fmtQ(num(it.usa)/2,u)}</td><td>${fmtQ(num(it.usa)/3,u)}</td></tr>`; }).join('')}</table></div></div>`; });
+  const bors = DB.config.bordas.filter(b=>(CU().bordas[b.nome]?.itens||[]).some(it=>num(it.usa)>0));
+  if (bors.length) h += `<div class="card"><b>Bordas (por borda)</b><div class="tbl"><table class="res"><tr><th>Borda</th><th>Item</th><th>Quantidade</th></tr>
+    ${bors.map(b=>CU().bordas[b.nome].itens.filter(it=>num(it.usa)>0).map(it=>`<tr><td>${esc(b.nome)}</td><td>${esc(it.nome)}</td><td>${fmtQ(it.usa,unUso(it))}</td></tr>`).join('')).join('')}</table></div></div>`;
+  const faltam = DB.config.sabores.length - sabs.length;
+  if (faltam) h += `<p class="small muted">${faltam} sabor(es) ainda sem gramas preenchidas não aparecem aqui.</p>`;
+  return h;
+}
+
+function refreshCalcs(){
+  if (CTAB==='bebidas') { DB.config.bebidas.forEach((b,i)=>{ const el = document.querySelector(`[data-bcalc="${i}"]`); if (el) el.innerHTML = bebCalc(b); }); return; }
+  listaAtual().forEach((it,i) => { const c = document.querySelector(`[data-calc="${i}"]`); if (c) c.textContent = brl(custoItem(it));
+    const u = document.querySelector(`[data-un="${i}"]`); if (u) u.textContent = unUso(it); });
+  const r = $('#resBox'); if (r) r.innerHTML = ({massa:resMassa, base:resBase, sabores:resSabor, bordas:resBorda})[CTAB]();
+}
+
+/* ===================== Modais ===================== */
+function abrirModal(html, refresh){ $('#modalRoot').innerHTML = `<div class="modal-bg" data-a="fecharFundo"><div class="modal">${html}</div></div>`; MODAL_REFRESH = refresh||null; }
+function fecharModal(){ $('#modalRoot').innerHTML=''; MODAL_REFRESH = null; }
+function abrirLogin(){
+  abrirModal(`<h2>Entrar</h2><p class="small muted">Use o mesmo login no PC e no celular para ver os mesmos dados.</p><form id="fLogin">
+    <label class="f"><span>E-mail</span><input type="email" name="email" required autocomplete="username"></label>
+    <label class="f"><span>Senha</span><input type="password" name="senha" required minlength="6" autocomplete="current-password"></label>
+    <div class="row"><button class="btn pri grow" type="submit" name="acao" value="entrar">Entrar</button><button class="btn" type="submit" name="acao" value="criar">Criar conta</button><button class="btn ghost" type="button" data-a="fechar">Agora não</button></div></form>`);
+}
+
+/* ===================== Ações ===================== */
+function finalizar(){
+  const bebidasLista = Object.entries(P.bebidas).filter(([,q])=>q>0).map(([nome,qtd])=>({nome,qtd,preco:num((DB.config.bebidas.find(b=>b.nome===nome)||{}).preco)}));
+  const sub = subtotal(P), tx = taxaPedido(P);
+  const numero = Object.values(DB.pedidos).filter(p=>p.data>=hojeIni()).reduce((m,p)=>Math.max(m, p.numero||0), 0) + 1;
+  const ped = { id:uid(), numero, data:Date.now(), clienteId:P.clienteId, pizzas:P.pizzas, bebidasLista, modo:P.modo,
+    endereco:P.modo==='entrega'?P.endereco:'', bairro:P.modo==='entrega'?P.bairro:'', taxa:tx, subtotal:sub, total:sub+tx,
+    pagamento:P.pagamento, troco:P.troco, obs:P.obs, status:'novo' };
+  ped.calc = calcPedido(ped);
+  const c = DB.clientes[P.clienteId];
+  if (P.modo==='entrega' && (P.endereco!==c.endereco || P.bairro!==c.bairro)) put('clientes', {...c, endereco:P.endereco||c.endereco, bairro:P.bairro||c.bairro});
+  return ped;
+}
+function confirmarFinalizar(){
+  const ped = finalizar();
+  abrirModal(`<h2>Resumo do pedido</h2><pre class="msg">${esc(montarMensagem(ped))}</pre>
+    <div class="row" style="margin-top:12px"><button class="btn wa grow" data-a="enviarConf">Salvar e abrir WhatsApp</button><button class="btn" data-a="copiarConf">Copiar</button><button class="btn ghost" data-a="fechar">Voltar</button></div>`);
+  window.__ped = ped;
+}
+function concluir(ped){ put('pedidos', ped); P = novoPedido(); PZ = novaPizza(); fecharModal(); render(); window.scrollTo(0,0); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-a]'); if (!t) return;
+  const a = t.dataset.a, id = t.dataset.id;
+  if (a==='fecharFundo') { if (e.target===t) fecharModal(); return; }
+  switch(a){
+    case 'tab': if (MODO==='custo') { const v = t.dataset.v; if (v==='sair') MODO = 'pedidos'; else CTAB = v==='fichas' ? ULTFICHA : v; } else TAB = t.dataset.v; render(); window.scrollTo(0,0); break;
+    case 'abrirCusto': abrirCusto(); break;
+    case 'trocarPin': abrirModal(formPin(false)); break;
+    case 'sabSel': SABSEL = t.dataset.n; render(); break;
+    case 'borSel': BORSEL = t.dataset.n; render(); break;
+    case 'ctab': CTAB = ULTFICHA = t.dataset.v; render(); break;
+    case 'dia': DIA = Math.min(hojeIni(), DIA + (+t.dataset.d)*864e5); { const x = new Date(DIA); x.setHours(0,0,0,0); DIA = x.getTime(); } render(); break;
+    case 'recalcDia': { const fim = DIA+864e5; Object.values(DB.pedidos).filter(p=>p.data>=DIA&&p.data<fim).forEach(p=>put('pedidos', {...p, calc:calcPedido(p)})); toast('Dia recalculado'); render(); break; }
+    case 'mAdd': { listaAtual().push({id:uid(), nome:'', pacote:'', un:'kg', preco:'', usa:''}); saveCustos(); render();
+      setTimeout(()=>{ const ins = document.querySelectorAll('[data-ci=m][data-f=nome]'); const i = ins[ins.length-1]; i && i.focus(); }, 30); break; }
+    case 'mDel': { const L = listaAtual(), it = L[+t.dataset.i]; if (!confirm(`Remover “${it.nome||'ingrediente'}”?`)) break; L.splice(+t.dataset.i,1); saveCustos(); render(); break; }
+    case 'novoCliente': BUSCA_PRE = ($('#buscaCli')||{}).value || ''; abrirModal(formCliente(null)); setTimeout(()=>{ const i=$('#fCli [name=nome]'); i && i.focus(); },50); break;
+    case 'editarCliente': BUSCA_PRE=''; abrirModal(formCliente(id)); break;
+    case 'delCliente': if (confirm('Excluir este cliente? Os pedidos dele continuam salvos.')) { del('clientes', id); if (P.clienteId===id) P.clienteId=null; fecharModal(); render(); } break;
+    case 'selCliente': { const c = DB.clientes[id]; P.clienteId = id; P.endereco = c.endereco||''; P.bairro = c.bairro||''; P.taxa = null; render(); break; }
+    case 'trocarCliente': P.clienteId = null; render(); setTimeout(()=>$('#buscaCli')&&$('#buscaCli').focus(),30); break;
+    case 'repetir': { const u = stats(P.clienteId).ultimo; P.pizzas = structuredClone(u.pizzas); P.bebidas = {}; (u.bebidasLista||[]).forEach(b=>P.bebidas[b.nome]=b.qtd);
+      P.modo = u.modo; P.pagamento = u.pagamento; if (u.modo==='entrega'){ P.bairro = u.bairro||P.bairro; P.endereco = u.endereco||P.endereco; }
+      P.pizzas.forEach(z=>{ z.preco = precoPizza(z); z.cat = catPizza(z); }); toast('Último pedido copiado — confira e finalize'); render(); break; }
+    case 'partes': PZ.partes = +t.dataset.v; PZ.sabores = PZ.sabores.slice(0, PZ.partes); rerenderPizza(); break;
+    case 'sabor': { const n = t.dataset.n; const i = PZ.sabores.indexOf(n);
+      if (i>=0) PZ.sabores.splice(i,1); else if (PZ.sabores.length < PZ.partes) PZ.sabores.push(n); else if (PZ.partes===1) PZ.sabores=[n]; else { PZ.sabores[PZ.partes-1]=n; }
+      rerenderPizza(); break; }
+    case 'limpaSlot': PZ.sabores.splice(+t.dataset.i,1); rerenderPizza(); break;
+    case 'borda': { const b = DB.config.bordas.find(x=>x.nome===t.dataset.n); PZ.borda = b ? {...b} : null; rerenderPizza(); break; }
+    case 'pzQtd': PZ.qtd = Math.max(1, PZ.qtd + +t.dataset.d); rerenderPizza(); break;
+    case 'addPizza': { const z = {...PZ, sabores:[...PZ.sabores]}; z.preco = precoPizza(z); z.cat = catPizza(z); P.pizzas.push(z); PZ = novaPizza(); toast('Pizza adicionada'); render(); break; }
+    case 'remPizza': P.pizzas.splice(+t.dataset.i,1); render(); break;
+    case 'beb': { const n=t.dataset.n; P.bebidas[n] = Math.max(0,(P.bebidas[n]||0) + +t.dataset.d); render(); break; }
+    case 'modo': P.modo = t.dataset.v; render(); break;
+    case 'pag': P.pagamento = t.dataset.v; render(); break;
+    case 'limpar': if (confirm('Limpar o pedido atual?')) { P = novoPedido(); PZ = novaPizza(); render(); } break;
+    case 'finalizar': if (PZ.sabores.length===PZ.partes && PZ.sabores.length && confirm('Tem uma pizza montada que não foi adicionada. Adicionar antes de finalizar?')) { const z={...PZ,sabores:[...PZ.sabores]}; z.preco=precoPizza(z); z.cat=catPizza(z); P.pizzas.push(z); PZ=novaPizza(); }
+      confirmarFinalizar(); break;
+    case 'enviarConf': { const ped = window.__ped; abrirWhats(ped); concluir(ped); toast('Pedido salvo ✅'); break; }
+    case 'copiarConf': navigator.clipboard.writeText(montarMensagem(window.__ped)).then(()=>toast('Mensagem copiada')); break;
+    case 'fechar': fecharModal(); break;
+    case 'filtroPed': FILTRO_PED = t.dataset.v; render(); break;
+    case 'reenviar': abrirWhats(DB.pedidos[id]); break;
+    case 'verMsg': { const p = DB.pedidos[id]; window.__ped = p; abrirModal(`<h2>Pedido #${p.numero||''}</h2><pre class="msg">${esc(montarMensagem(p))}</pre>
+      <div class="row" style="margin-top:12px"><button class="btn" data-a="copiarConf">Copiar</button><button class="btn danger" data-a="delPedido" data-id="${id}">Excluir pedido</button><button class="btn ghost" data-a="fechar">Fechar</button></div>`); break; }
+    case 'delPedido': if (confirm('Excluir este pedido definitivamente?')) { del('pedidos', id); fecharModal(); render(); } break;
+    case 'verCliente': abrirModal(modalCliente(id), ()=>DB.clientes[id] && abrirModal(modalCliente(id), MODAL_REFRESH)); break;
+    case 'pedirPara': { const c = DB.clientes[id]; P = novoPedido(); P.clienteId=id; P.endereco=c.endereco||''; P.bairro=c.bairro||''; fecharModal(); TAB='novo'; render(); break; }
+    case 'cfgAdd': { const k=t.dataset.k; const C=DB.config;
+      C[k].push(k==='sabores' ? {nome:'Novo sabor',cat:t.dataset.cat,preco:t.dataset.cat==='especial'?C.precoEspecial:C.precoNormal} : k==='bairros' ? {nome:'Novo bairro',taxa:C.taxaPadrao} : {nome:'Novo item',preco:0});
+      saveConfig(); render(); break; }
+    case 'cfgDel': if (confirm('Remover este item?')) { DB.config[t.dataset.k].splice(+t.dataset.i,1); saveConfig(); render(); } break;
+    case 'aplicarPrecos': if (confirm('Colocar o preço padrão em todos os sabores?')) { DB.config.sabores.forEach(s=>s.preco = s.cat==='especial'?num(DB.config.precoEspecial):num(DB.config.precoNormal)); saveConfig(); render(); } break;
+    case 'exportar': { const b = new Blob([JSON.stringify(DB,null,1)],{type:'application/json'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download='pizzaria-backup-'+new Date().toISOString().slice(0,10)+'.json'; l.click(); break; }
+    case 'salvarFb': { let raw = $('#fbCfg').value.trim(); if (!raw) return;
+      try { raw = raw.replace(/^[^{]*/,'').replace(/[^}]*$/,''); let cfg; try { cfg = JSON.parse(raw); } catch(_) { cfg = Function('return ('+raw+')')(); }
+        if (!cfg.apiKey || !cfg.projectId) throw new Error('faltando apiKey/projectId'); localStorage.setItem(LS_FB, JSON.stringify(cfg)); location.reload(); }
+      catch(err){ alert('Configuração inválida: '+err.message); } break; }
+    case 'removerFb': if (confirm('Desconectar a nuvem neste aparelho?')) { localStorage.removeItem(LS_FB); location.reload(); } break;
+    case 'login': abrirLogin(); break;
+    case 'sair': firebase.auth().signOut(); break;
+  }
+});
+function rerenderPizza(){ render(); }
+
+document.addEventListener('input', e => {
+  const t = e.target, k = t.dataset.in;
+  if (t.dataset.ci) {
+    if (t.dataset.ci==='rende') CU().massa.rende = t.value;
+    else if (t.dataset.ci==='beb') { const n = t.dataset.n; CU().bebidas[n] = {...(CU().bebidas[n]||{}), [t.dataset.f]: t.value}; }
+    else { const it = listaAtual()[+t.dataset.i]; if (it) it[t.dataset.f] = t.value; }
+    saveCustos(); refreshCalcs(); return; }
+  if (k==='buscaCli') { $('#resCli').innerHTML = listaBuscaCli(t.value); return; }
+  if (k==='buscaClientes') { BUSCA_CLI = t.value; const pos=t.selectionStart; render(); const n=document.querySelector('[data-in=buscaClientes]'); n.focus(); n.setSelectionRange(pos,pos); return; }
+  if (k==='endereco') P.endereco = t.value;
+  if (k==='obs') P.obs = t.value;
+  if (k==='troco') P.troco = t.value;
+  if (k==='pzObs') PZ.obs = t.value;
+  if (k==='taxa') { P.taxa = t.value; atualizaTotal(); }
+  if (t.dataset.cfg) { const it = DB.config[t.dataset.cfg][+t.dataset.i]; const f=t.dataset.f; it[f] = (f==='preco'||f==='taxa') ? num(t.value) : t.value; saveConfig(); }
+  if (t.dataset.cfgv) { const f=t.dataset.cfgv; DB.config[f] = /preco|taxa/.test(f) ? num(t.value) : t.value; saveConfig(); if (f==='nome') $('#appTitle').textContent='🍕 '+t.value; }
+});
+document.addEventListener('change', e => {
+  const t = e.target, k = t.dataset.in;
+  if (k==='bairro') { P.bairro = t.value; P.taxa = null; render(); }
+  if (k==='status') { const p = DB.pedidos[t.dataset.id]; put('pedidos', {...p, status:t.value}); render(); }
+  if (t.dataset.cfg && t.dataset.f==='cat') render();
+  if (t.id==='impFile' && t.files[0]) { const r = new FileReader(); r.onload = () => { try { const d = JSON.parse(r.result);
+      if (!confirm(`Importar ${Object.keys(d.clientes||{}).length} clientes e ${Object.keys(d.pedidos||{}).length} pedidos? (junta com os dados atuais)`)) return;
+      Object.values(d.clientes||{}).forEach(c=>put('clientes',c)); Object.values(d.pedidos||{}).forEach(p=>put('pedidos',p)); if (d.config){ DB.config={...DB.config,...d.config}; saveConfig(); } if (d.custos){ DB.custos=normCustos(d.custos); saveCustos(); }
+      toast('Dados importados'); render(); } catch(err){ alert('Arquivo inválido'); } }; r.readAsText(t.files[0]); }
+});
+function atualizaTotal(){ const el=$('#totalTxt'); if (el) el.textContent = brl(subtotal(P)+taxaPedido(P)); }
+
+document.addEventListener('submit', async e => {
+  e.preventDefault(); const f = e.target;
+  if (f.id==='fCli') {
+    const d = Object.fromEntries(new FormData(f)); d.nome = d.nome.trim(); d.telefone = d.telefone.trim();
+    if (onlyDigits(d.telefone).length < 10) { alert('Informe o WhatsApp com DDD.'); return; }
+    const dup = Object.values(DB.clientes).find(c => c.id!==f.dataset.id && telWhats(c.telefone)===telWhats(d.telefone));
+    if (dup && !confirm(`Já existe "${dup.nome}" com esse número. Salvar mesmo assim?`)) return;
+    const id = f.dataset.id || uid(); const c = {...(DB.clientes[id]||{criadoEm:Date.now(), cor:PALETA[Object.keys(DB.clientes).length % PALETA.length]}), ...d, id};
+    put('clientes', c); fecharModal();
+    if (!f.dataset.id && TAB==='novo') { P.clienteId = id; P.endereco = c.endereco||''; P.bairro = c.bairro||''; }
+    toast('Cliente salvo'); render();
+  }
+  if (f.id==='fPin') {
+    if (hashPin(f.p.value)===CU().pin) entrarCusto();
+    else { toast('PIN errado'); f.p.value=''; f.p.focus(); }
+  }
+  if (f.id==='fPinNovo') {
+    const a = f.p1.value, b = f.p2.value;
+    if (!/^\d{4,8}$/.test(a)) { alert('O PIN precisa ter de 4 a 8 números.'); return; }
+    if (a!==b) { alert('Os dois PINs não são iguais.'); return; }
+    const primeiro = !CU().pin; CU().pin = hashPin(a); saveCustos();
+    if (primeiro) entrarCusto(); else { fecharModal(); toast('PIN trocado'); }
+  }
+  if (f.id==='fLogin') {
+    const d = Object.fromEntries(new FormData(f)); const acao = e.submitter && e.submitter.value;
+    try { if (acao==='criar') await firebase.auth().createUserWithEmailAndPassword(d.email, d.senha); else await firebase.auth().signInWithEmailAndPassword(d.email, d.senha); fecharModal(); }
+    catch(err){ alert('Não foi possível entrar: '+err.message); }
+  }
+});
+
+render();
+iniciarNuvem();
+if ('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
