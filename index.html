@@ -82,10 +82,10 @@ label.f>span{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
 .list-btn{display:flex;width:100%;text-align:left;gap:10px;align-items:center;border:0;border-bottom:1px solid var(--line);background:none;padding:12px 2px;cursor:pointer}
 .list-btn:last-child{border-bottom:0}
 .sticky-total{position:sticky;bottom:72px;z-index:4;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
-.modal{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
-@media(min-width:700px){.modal-bg{align-items:center}.modal{border-radius:18px}}
-.modal h2{margin-top:4px}
+.pzm-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.pzm{position:relative;inset:auto;display:block;height:auto;background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+@media(min-width:700px){.pzm-bg{align-items:center}.pzm{border-radius:18px}}
+.pzm h2{margin-top:4px}
 pre.msg{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:12px;font:14px/1.45 system-ui,sans-serif;margin:0}
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:30;font-size:14px}
 .cfgrow{display:grid;grid-template-columns:1fr 110px 40px;gap:6px;margin:6px 0;align-items:center}
@@ -141,7 +141,7 @@ table.res tr:last-child td{border-bottom:0}
 </style>
 </head>
 <body>
-<header class="top"><h1 id="appTitle">🍕 Pedidos</h1><span class="sync" id="syncBadge">Local</span><button class="lock" id="lockBtn" data-a="abrirCusto" title="Área restrita" aria-label="Área restrita"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button></header>
+<header class="top"><h1 id="appTitle">🍕 Pedidos</h1><span class="sync" id="syncBadge" data-a="loginBadge" style="cursor:pointer">Local</span><button class="lock" id="lockBtn" data-a="abrirCusto" title="Área restrita" aria-label="Área restrita"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button></header>
 <main class="wrap" id="view"></main>
 <nav class="tabs" id="nav"></nav>
 <div id="modalRoot"></div>
@@ -825,7 +825,7 @@ function refreshCalcs(){
 }
 
 /* ===================== Modais ===================== */
-function abrirModal(html, refresh){ $('#modalRoot').innerHTML = `<div class="modal-bg" data-a="fecharFundo"><div class="modal">${html}</div></div>`; MODAL_REFRESH = refresh||null; }
+function abrirModal(html, refresh){ $('#modalRoot').innerHTML = `<div class="pzm-bg" data-a="fecharFundo"><div class="pzm">${html}</div></div>`; MODAL_REFRESH = refresh||null; }
 function fecharModal(){ $('#modalRoot').innerHTML=''; MODAL_REFRESH = null; }
 function abrirLogin(){
   abrirModal(`<h2>Entrar</h2><p class="small muted">Use o mesmo login no PC e no celular para ver os mesmos dados.</p><form id="fLogin">
@@ -916,6 +916,7 @@ document.addEventListener('click', e => {
       catch(err){ alert('Configuração inválida: '+err.message); } break; }
     case 'removerFb': if (confirm('Desconectar a nuvem neste aparelho?')) { localStorage.removeItem(LS_FB); location.reload(); } break;
     case 'login': abrirLogin(); break;
+    case 'loginBadge': if (!Cloud.on && typeof firebase!=='undefined') abrirLogin(); break;
     case 'sair': firebase.auth().signOut(); break;
   }
 });
